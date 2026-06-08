@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Happy Birthday!</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a0b2e 0%, #0c0414 100%);
+      min-height: 100vh;
+      min-height: -webkit-fill-available; /* Fixed mobile viewport height bug */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Only hide the default cursor on desktop screens */
+    @media (pointer: fine) {
+      body { cursor: none; }
+    }
+
+    /* Canvas for crackers */
+    #fireworksCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Floating Bouquet Cursor */
+    #bouquetCursor {
+      position: fixed;
+      width: 48px;
+      height: 48px;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      will-change: left, top;
+      display: none; /* Hidden by default on mobile unless mouse pointer exists */
+    }
+
+    @media (pointer: fine) {
+      #bouquetCursor { display: block; }
+    }
+
+    /* Main Card Container */
+    .card-container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 24px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Shatter effect class applied on double click */
+    .shatter {
+      transform: scale(0) rotate(540deg) !important;
+      opacity: 0 !important;
+      pointer-events: none;
+    }
+
+    .photo-frame {
+      width: 160px;
+      height: 160px;
+      margin: 0 auto 20px auto;
+      border-radius: 50%;
+      border: 4px solid #ff4081;
+      box-shadow: 0 8px 25px rgba(255, 64, 129, 0.4);
+      overflow: hidden;
+    }
+
+    @media (min-width: 480px) {
+      .photo-frame { width: 190px; height: 190px; }
+      .card-container { padding: 32px; }
+    }
+
+    .photo-frame img { width: 100%; height: 100%; object-fit: cover; }
+
+    h1 {
+      color: #ff4081;
+      font-size: 1.8rem;
+      margin-bottom: 12px;
+      text-shadow: 0 2px 10px rgba(255, 64, 129, 0.3);
+    }
+    
+    @media (min-width: 480px) {
+      h1 { font-size: 2.2rem; }
+    }
+
+    p { color: #f0e6ff; font-size: 1rem; line-height: 1.5; margin-bottom: 12px; }
+    @media (min-width: 480px) {
+      p { font-size: 1.1rem; }
+    }
+
+    .hint { color: #aaa; font-size: 0.8rem; font-style: italic; }
+
+    /* Gift Screen Layout Fixes */
+    #giftScreen {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      text-align: center;
+      z-index: 10;
+      opacity: 0;
+      transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none;
+      width: 100%;
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #giftScreen.show {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    #giftBox {
+      width: 160px;
+      max-width: 50vw;
+      cursor: pointer;
+      animation: bounce 2s infinite;
+      transition: transform 0.3s ease;
+    }
+
+    #giftBox:hover { transform: scale(1.1); }
+
+    /* Final Surprise Image Display */
+    #surpriseImageContainer {
+      display: none;
+      width: 100%;
+      max-width: 380px;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(255, 64, 129, 0.8);
+      border: 4px solid #fff;
+      animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+    }
+
+    #surpriseImageContainer img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-16px); }
+      60% { transform: translateY(-8px); }
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(0.5); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="fireworksCanvas"></canvas>
+
+  <img src="bouquet.png" id="bouquetCursor" alt="💐">
+
+  <div class="card-container" id="birthdayCard">
+    <div class="photo-frame">
+      <img src="friend.jfif" alt="Birthday Friend">
+    </div>
+    <h1>Happy Birthday,<br>Vijju😊❤️!</h1>
+    <p>
+      Wishing you a spectacular day filled with endless joy, laughter, and success. Have an absolute blast! 🎉✨
+    </p>
+    <p class="hint">(Psst... double tap anywhere on the screen for a surprise! 🤫)</p>
+  </div>
+
+  <div id="giftScreen">
+    <img src="giftbox.png" id="giftBox" alt="Tap Me!" onclick="revealSurprise()">
+    <div id="surpriseImageContainer">
+      <img src="surprise.jfif" alt="Surprise Reveal!">
+    </div>
+  </div>
+
+  <script>
+    const bouquet = document.getElementById('bouquetCursor');
+    const card = document.getElementById('birthdayCard');
+    const giftScreen = document.getElementById('giftScreen');
+    const giftBox = document.getElementById('giftBox');
+    const surpriseContainer = document.getElementById('surpriseImageContainer');
+    const canvas = document.getElementById('fireworksCanvas');
+    const ctx = canvas.getContext ? canvas.getContext('2d') : null;
+
+    // --- 1. CANVAS RESIZE (crisp handling of DPR) ---
+    function resizeCanvas() {
+      if (!canvas || !ctx) return;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // --- 2. BOUQUET TRACKING (Desktop Match) ---
+    window.addEventListener('mousemove', (e) => {
+      if(bouquet) {
+        bouquet.style.display = 'block';
+        bouquet.style.left = e.clientX + 'px';
+        bouquet.style.top = e.clientY + 'px';
+      }
+    });
+
+    // --- 3. FIREWORKS ENGINE ---
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 4 + 2; // Reduced slightly for seamless mobile rendering
+        this.velocity = { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed };
+        this.alpha = 1;
+        this.friction = 0.96;
+        this.gravity = 0.05;
+        this.size = Math.random() * 1.5 + 1.5;
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.alpha);
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.restore();
+      }
+      update() {
+        this.velocity.x *= this.friction;
+        this.velocity.y *= this.friction;
+        this.velocity.y += this.gravity;
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+        this.alpha -= 0.015;
+      }
+    }
+
+    let particles = [];
+    const colors = ['#ff4081', '#00e5ff', '#00e676', '#ffea00', '#ff9100', '#d500f9'];
+
+    function createCrackerBlast(x, y, count = 40) {
+      if (!ctx) return;
+      for (let i = 0; i < count; i++) {
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        particles.push(new Particle(x, y, randomColor));
+      }
+    }
+
+    // Ambient background sparks
+    setInterval(() => {
+      const randomX = Math.random() * window.innerWidth;
+      const randomY = Math.random() * (window.innerHeight * 0.6);
+      createCrackerBlast(randomX, randomY, 15);
+    }, 1200);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (!ctx) return;
+
+      ctx.fillStyle = 'rgba(26, 11, 46, 0.25)';
+      ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        if (p.alpha > 0) {
+          p.update();
+          p.draw();
+        } else {
+          particles.splice(i, 1);
+        }
+      }
+    }
+    animate();
+
+    // --- 4. SHATTER & TRIGGER EVENTS ---
+    function triggerShatter(x, y) {
+      if (!card.classList.contains('shatter')) {
+        createCrackerBlast(x, y, 100);
+        card.classList.add('shatter');
+        setTimeout(() => {
+          giftScreen.classList.add('show');
+        }, 650);
+      }
+    }
+
+    window.addEventListener('dblclick', (e) => {
+      triggerShatter(e.clientX, e.clientY);
+    });
+
+    // Mobile Responsive Double Tap Fix
+    let lastTap = 0;
+    window.addEventListener('touchend', (e) => {
+      const currentTime = Date.now();
+      const tapLength = currentTime - lastTap;
+      if (tapLength < 300 && tapLength > 0) {
+        const touch = e.changedTouches[0] || {};
+        const x = touch.clientX || window.innerWidth / 2;
+        const y = touch.clientY || window.innerHeight / 2;
+        triggerShatter(x, y);
+      }
+      lastTap = currentTime;
+    });
+
+    // --- 5. REVEAL SURPRISE ---
+    function revealSurprise() {
+      createCrackerBlast(window.innerWidth / 2, window.innerHeight / 2, 120);
+      if (giftBox) giftBox.style.display = 'none';
+      if (surpriseContainer) surpriseContainer.style.display = 'block';
+    }
+    
+    window.revealSurprise = revealSurprise;
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        if (!card.classList.contains('shatter')) {
+          triggerShatter(window.innerWidth / 2, window.innerHeight / 2);
+        } else if (giftScreen.classList.contains('show') && giftBox.style.display !== 'none') {
+          revealSurprise();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
